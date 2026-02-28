@@ -1,5 +1,4 @@
 import express from "express";
-import path from "path";
 import cors from "cors";
 import { serve } from "inngest/express";
 import { clerkMiddleware } from "@clerk/express";
@@ -16,60 +15,71 @@ import { clerkWebhook } from "./controllers/authcontroller.js";
 
 const app = express();
 
-const __dirname = path.resolve();
-
-// middleware - updated
-// CORS must be first to handle preflight requests
+// CORS configuration
 const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
+  "http://localhost:5173",
+  "http://localhost:3000",
   ENV.CLIENT_URL,
-  process.env.PRODUCTION_URL,
+  ENV.PRODUCTION_URL,
 ].filter(Boolean);
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, Postman, curl)
-    if (!origin) return callback(null, true);
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, Postman, curl)
+      if (!origin) return callback(null, true);
 
-    // Check if origin is in allowed list or matches pattern
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app') || origin.endsWith('.netlify.app')) {
-      callback(null, true);
-    } else {
-      callback(null, true); // Allow all origins for now, restrict in production
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-}));
+      if (
+        allowedOrigins.indexOf(origin) !== -1 ||
+        origin.endsWith(".vercel.app") ||
+        origin.endsWith(".netlify.app")
+      ) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Allow all origins for now
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  })
+);
+
 app.use(express.json());
 
-// Health check before auth
+// Health check (before auth)
 app.get("/health", (req, res) => {
   res.status(200).json({ msg: "api is up and running" });
 });
 
-app.use(clerkMiddleware()); // this adds auth field to request object: req.auth()
+// Ensure DB is connected on every request (critical for serverless cold starts)
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error("❌ DB connection failed:", error);
+    res.status(500).json({ message: "Database connection failed" });
+  }
+});
 
-// Auth routes - webhook needs raw body middleware
-app.post("/api/auth/webhook", express.raw({ type: "application/json" }), clerkWebhook);
+app.use(clerkMiddleware());
 
-// Other auth routes (like /sync)
+// Auth routes
+app.post(
+  "/api/auth/webhook",
+  express.raw({ type: "application/json" }),
+  clerkWebhook
+);
 app.use("/api/auth", authRoutes);
 
+// Inngest
 app.use("/api/inngest", serve({ client: inngest, functions }));
+
+// API routes
 app.use("/api/chat", chatRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/code", codeRoutes);
-
-console.log("✅ Routes registered:");
-console.log("   POST /api/auth/webhook (Clerk webhook)");
-console.log("   POST /api/auth/sync (User sync)");
-console.log("   GET  /api/sessions/my-recent");
-console.log("   POST /api/sessions");
-console.log("   POST /api/code/execute");
-console.log("   GET  /api/chat/token");
 
 // Root route
 app.get("/", (req, res) => {
@@ -81,32 +91,34 @@ app.get("/", (req, res) => {
       health: "/health",
       auth: "/api/auth",
       sessions: "/api/sessions",
-      chat: "/api/chat"
-    }
+      chat: "/api/chat",
+    },
   });
 });
 
-// 404 handler for undefined routes
+// 404 handler
 app.use((req, res) => {
-  console.log(`404 - Route not found: ${req.method} ${req.path}`);
   res.status(404).json({
     message: "Route not found",
     path: req.path,
-    method: req.method
+    method: req.method,
   });
 });
 
-const startServer = async () => {
-  try {
-    await connectDB();
-    if (process.env.NODE_ENV !== "production") {
-      app.listen(ENV.PORT || 3000, () => console.log("Server is running on port:", ENV.PORT || 3000));
+// Local dev server (Vercel uses the exported app directly)
+if (ENV.NODE_ENV !== "production") {
+  const startServer = async () => {
+    try {
+      await connectDB();
+      app.listen(ENV.PORT, () =>
+        console.log("Server is running on port:", ENV.PORT)
+      );
+    } catch (error) {
+      console.error("💥 Error starting the server", error);
     }
-  } catch (error) {
-    console.error("💥 Error starting the server", error);
-  }
-};
+  };
+  startServer();
+}
 
-startServer();
-
+// Export for Vercel serverless
 export default app;
