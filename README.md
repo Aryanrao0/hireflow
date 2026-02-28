@@ -5,6 +5,10 @@
 </p>
 
 <p align="center">
+  <a href="https://hireflow-852v.vercel.app/"><strong>🚀 Live Demo</strong></a>
+</p>
+
+<p align="center">
   <a href="https://github.com/Aryanrao0/hireflow">
     <img src="https://img.shields.io/github/stars/Aryanrao0/hireflow?style=social" alt="GitHub stars">
   </a>
