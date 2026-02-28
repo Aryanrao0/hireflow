@@ -5,15 +5,13 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/amulyabhardwaj007/HireFlow">
-    <img src="https://img.shields.io/github/stars/amulyabhardwaj007/HireFlow?style=social" alt="GitHub stars">
+  <a href="https://github.com/Aryanrao0/hireflow">
+    <img src="https://img.shields.io/github/stars/Aryanrao0/hireflow?style=social" alt="GitHub stars">
   </a>
-  <a href="https://github.com/amulyabhardwaj007/HireFlow/blob/main/LICENSE">
+  <a href="https://github.com/Aryanrao0/hireflow/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/license-ISC-blue.svg" alt="License">
   </a>
 </p>
-
-
 
 ---
 
@@ -46,7 +44,7 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js (v16 or higher)
+- Node.js (v18 or higher)
 - MongoDB
 - Clerk account
 - Stream.io account
@@ -56,17 +54,16 @@
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/amulyabhardwaj007/HireFlow.git
-cd HireFlow/talent-IQ-master
+git clone https://github.com/Aryanrao0/hireflow.git
+cd hireflow
 ```
 
 2. **Install dependencies**
 ```bash
-# Install all dependencies (root, backend, frontend)
-npm install
-
-# Or install separately
+# Install backend dependencies
 cd backend && npm install
+
+# Install frontend dependencies
 cd ../frontend && npm install
 ```
 
@@ -95,6 +92,7 @@ STREAM_API_SECRET=your_stream_api_secret
 # Clerk
 CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
 CLERK_SECRET_KEY=your_clerk_secret_key
+CLERK_WEBHOOK_SECRET=your_clerk_webhook_secret
 
 # Client
 CLIENT_URL=http://localhost:5173
@@ -130,33 +128,39 @@ Server runs on `http://localhost:3000`
 **Frontend:**
 ```bash
 cd frontend
-npm run dev
+npm run start
 ```
 Client runs on `http://localhost:5173`
 
-### Production Build
+---
 
-```bash
-# Build frontend
-npm run build
+## ☁️ Deployment
 
-# Start production server
-npm start
-```
+The project is compatible with **Vercel** serverless deployment.
+
+### Backend (Serverless API)
+1. Set root directory to `backend/`.
+2. Add all environment variables in the Vercel dashboard.
+3. Vercel will use `vercel.json` to configure the `@vercel/node` runtime.
+
+### Frontend (Static SPA)
+1. Set root directory to `frontend/`.
+2. Framework Preset: **Vite**.
+3. Add `VITE_` environment variables.
 
 ---
 
 ## 📁 Project Structure
 
 ```
-talent-IQ-master/
+hireflow/
 ├── backend/
 │   ├── src/
 │   │   ├── controllers/      # Request handlers
 │   │   ├── models/           # Database schemas
 │   │   ├── routes/           # API routes
 │   │   ├── middleware/       # Auth & validation
-│   │   ├── lib/              # Utilities
+│   │   ├── lib/              # Utilities (DB, Stream, Inngest)
 │   │   └── server.js         # Entry point
 │   └── package.json
 │
@@ -185,18 +189,12 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-## 📝 License
-
-This project is licensed under the ISC License.
-
----
-
 ## 👨‍💻 Author
 
-**Amulya Bhardwaj**
+**Aryan Rao**
 
-- GitHub: [@amulyabhardwaj007](https://github.com/amulyabhardwaj007)
-- Project Link: [https://github.com/amulyabhardwaj007/HireFlow](https://github.com/amulyabhardwaj007/HireFlow)
+- GitHub: [@Aryanrao0](https://github.com/Aryanrao0)
+- Project Link: [https://github.com/Aryanrao0/hireflow](https://github.com/Aryanrao0/hireflow)
 
 ---
 
@@ -207,7 +205,3 @@ This project is licensed under the ISC License.
 - [Inngest](https://www.inngest.com/) for background jobs
 - [Monaco Editor](https://microsoft.github.io/monaco-editor/) for code editing
 - [Vite](https://vitejs.dev/) for blazing fast builds
-
----
-
-<p align="center">Made with hate by Amulya Bhardwaj </p>
